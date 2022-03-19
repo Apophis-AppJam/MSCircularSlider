@@ -565,8 +565,8 @@ public class MSCircularSlider: UIControl {
     override public func endTracking(_ touch: UITouch?, with event: UIEvent?) {
         super.endTracking(touch, with: event)
         
-        snapHandle()
         castDelegate?.circularSlider(self, endedTrackingWith: currentValue)
+        snapHandle()
         
         handle.isPressed = false
         isSliding = false
@@ -797,27 +797,6 @@ public class MSCircularSlider: UIControl {
     // CONTROL METHODS
     //================================================================================
     
-    /** Sets the `currentValue` with optional animation
-    public func setValue(_ newValue: Double, withAnimation animated: Bool = false, animationDuration duration: Double = 0.75, completionBlock: (() -> Void)? = nil) {
-        if !animated {
-            currentValue = newValue
-            return
-        }
-        
-        // Animate
-        let newVal = min(max(minimumValue, newValue), maximumValue)
-        
-        let anim = CABasicAnimation(keyPath: "currentValue")
-        anim.duration = duration
-        anim.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
-        anim.fromValue = currentValue
-        anim.toValue = newVal
-        anim.isRemovedOnCompletion = true
-        
-        handle.add(anim, forKey: "currentValue")
-        handle.currentValue = newVal
-    }*/
-    
     /** Moves the handle to `newAngle` */
     private func moveHandle(newAngle: CGFloat) {
         if newAngle > maximumAngle {    // for incomplete circles
@@ -834,6 +813,8 @@ public class MSCircularSlider: UIControl {
             angle = newAngle
         }
         setNeedsDisplay()
+        NotificationCenter.default.post(name: NSNotification.Name("moveHandle"),
+                                        object: currentValue)
     }
     
     /** Snaps the handle to the nearest label/marker depending on the settings */
@@ -888,12 +869,12 @@ public class MSCircularSlider: UIControl {
     
     /** Calculates the angle from north given a value */
     internal func angleFrom(value: Double) -> CGFloat {
-        return (CGFloat(value - minimumValue) * maximumAngle) / CGFloat(maximumValue - minimumValue)
+        return (CGFloat(value) * maximumAngle) / CGFloat(maximumValue - minimumValue)
     }
     
     /** Calculates the value given an angle from north */
     internal func valueFrom(angle: CGFloat) -> Double {
-        return ((maximumValue - minimumValue) * Double(angle) / Double(maximumAngle)) + minimumValue
+        return (maximumValue - minimumValue) * Double(angle) / Double(maximumAngle)
     }
     
     /** Converts degrees to radians */
